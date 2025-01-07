@@ -29,7 +29,7 @@ def login_to_instagram(username, password):
     """تسجيل الدخول إلى Instagram."""
     session = Session()
     headers = {
-        "User-Agent": "Instagram 123.0.0.21.114 Android (30/3.0; 320dpi; 720x1280; Xiaomi; Redmi Note 8; ginkgo; qcom; en_US)",
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 221.0.0.16.117",
         "Accept": "*/*",
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "Accept-Encoding": "gzip, deflate",
@@ -74,7 +74,7 @@ def report_profile_attack(username, sessionid, csrftoken):
         user_info_response = post(
             f"https://www.instagram.com/{username}/?__a=1",
             headers={
-                "User-Agent": "Mozilla/5.0",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 221.0.0.16.117",
                 "cookie": f"sessionid={sessionid}",
                 "X-CSRFToken": csrftoken,
             }
@@ -95,7 +95,7 @@ def report_profile_attack(username, sessionid, csrftoken):
         response = post(
             f"https://i.instagram.com/api/v1/users/{user_id}/flag/",
             headers={
-                "User-Agent": "Mozilla/5.0",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 221.0.0.16.117",
                 "cookie": f"sessionid={sessionid}",
                 "X-CSRFToken": csrftoken,
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
