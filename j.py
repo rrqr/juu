@@ -11,7 +11,7 @@ import uuid
 # Helpers
 def print_logo():
     print(Fore.GREEN + r"""
-JUNAI """ + Style.RESET_ALL)
+JUNAI""" + Style.RESET_ALL)
 
 def print_success(message):
     print(Fore.GREEN + "[+] " + message + Style.RESET_ALL)
@@ -70,55 +70,52 @@ def login_to_instagram(username, password):
 def report_profile_attack(username, sessionid, csrftoken):
     """الإبلاغ عن حساب معين."""
     try:
-        print_status(f"Reporting profile: {username}")
-        response = post(
-            f"https://i.instagram.com/api/v1/users/{username}/flag/",
+        # الحصول على user_id عبر طلب GET
+        user_info_response = post(
+            f"https://www.instagram.com/{username}/?__a=1",
             headers={
                 "User-Agent": "Mozilla/5.0",
                 "cookie": f"sessionid={sessionid}",
                 "X-CSRFToken": csrftoken,
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+        )
+
+        if user_info_response.status_code == 200:
+            user_id = user_info_response.json().get("graphql", {}).get("user", {}).get("id")
+            if not user_id:
+                print_error("Failed to fetch user ID. Invalid username.")
+                return
+        else:
+            print_error(f"Failed to fetch user info. Status: {user_info_response.status_code}")
+            return
+
+        print_status(f"Reporting profile: {username} (ID: {user_id})")
+
+        # إرسال طلب الإبلاغ
+        response = post(
+            f"https://i.instagram.com/api/v1/users/{user_id}/flag/",
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "cookie": f"sessionid={sessionid}",
+                "X-CSRFToken": csrftoken,
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             },
             data="reason_id=1&source_name="  # سبب البلاغ: Scam/Spam
         )
+
         print(response.text)  # طباعة الرد للتأكد
         if response.status_code == 200:
             print_success("Report Sent Successfully!")
+        elif response.status_code == 404:
+            print_error("Failed to send report. The endpoint might be incorrect or the target does not exist.")
         else:
             print_error(f"Failed to send report. Status: {response.status_code}")
     except Exception as e:
         print_error(f"Error during profile report: {e}")
 
-def report_video_attack(video_url, sessionid, csrftoken):
-    """الإبلاغ عن فيديو."""
-    try:
-        print_status(f"Reporting video: {video_url}")
-        response = post(
-            f"https://i.instagram.com/api/v1/media/{video_url}/flag/",
-            headers={
-                "User-Agent": "Mozilla/5.0",
-                "cookie": f"sessionid={sessionid}",
-                "X-CSRFToken": csrftoken,
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
-            },
-            data="reason_id=1&source_name="  # سبب البلاغ: Scam/Spam
-        )
-        print(response.text)  # طباعة الرد للتأكد
-        if response.status_code == 200:
-            print_success("Report Sent Successfully!")
-        else:
-            print_error(f"Failed to send report. Status: {response.status_code}")
-    except Exception as e:
-        print_error(f"Error during video report: {e}")
-
 def profile_attack(username, sessionid, csrftoken):
     """تنفيذ الهجوم على ملف شخصي."""
     p = Process(target=report_profile_attack, args=(username, sessionid, csrftoken,))
-    p.start()
-
-def video_attack(video_url, sessionid, csrftoken):
-    """تنفيذ الهجوم على فيديو."""
-    p = Process(target=report_video_attack, args=(video_url, sessionid, csrftoken,))
     p.start()
 
 def main():
@@ -135,15 +132,11 @@ def main():
         return
 
     print_status("1 - Report Profile")
-    print_status("2 - Report a Video")
     report_choice = ask_question("Please select the complaint method")
 
     if report_choice == "1":
         target_username = ask_question("Enter the username of the person you want to report")
         profile_attack(target_username, sessionid, csrftoken)
-    elif report_choice == "2":
-        video_url = ask_question("Enter the URL of the video you want to report")
-        video_attack(video_url, sessionid, csrftoken)
     else:
         print_error("Invalid choice. Exiting.")
 
