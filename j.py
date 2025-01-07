@@ -11,7 +11,7 @@ import uuid
 # Helpers
 def print_logo():
     print(Fore.GREEN + r"""
-JUNAI""" + Style.RESET_ALL)
+JUNAI """ + Style.RESET_ALL)
 
 def print_success(message):
     print(Fore.GREEN + "[+] " + message + Style.RESET_ALL)
@@ -123,8 +123,8 @@ def main():
     print_success("Modules loaded!")
 
     # تسجيل الدخول
-    username = ask_question("Enter your Instagram username")
-    password = ask_question("Enter your Instagram password")
+    username = ask_question("Enter your Instagram username").strip()
+    password = ask_question("Enter your Instagram password").strip()
     sessionid, csrftoken = login_to_instagram(username, password)
 
     if not sessionid or not csrftoken:
@@ -132,11 +132,15 @@ def main():
         return
 
     print_status("1 - Report Profile")
-    report_choice = ask_question("Please select the complaint method")
+    print_status("Note: Enter '1' to report a profile.")
+    report_choice = ask_question("Please select the complaint method").strip()
 
     if report_choice == "1":
-        target_username = ask_question("Enter the username of the person you want to report")
-        profile_attack(target_username, sessionid, csrftoken)
+        target_username = ask_question("Enter the username of the person you want to report").strip()
+        if target_username:
+            profile_attack(target_username, sessionid, csrftoken)
+        else:
+            print_error("Invalid username. Exiting.")
     else:
         print_error("Invalid choice. Exiting.")
 
